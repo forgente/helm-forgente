@@ -605,13 +605,23 @@ valkey:
     image:
       repository: bitnamilegacy/redis-exporter
 
-  ## @param valkey.persistence.enabled Enable persistence on Valkey replicas nodes using Persistent Volume Claims.
-  ## @param valkey.persistence.storageClass Persistent Volume storage class.
-  ## @param valkey.persistence.size Persistent Volume size.
-  persistence:
-    enabled: true
-    storageClass: ""
-    size: 8Gi
+  primary:
+  ## @param valkey.primary.persistence.enabled Enable persistence on Valkey replicas nodes using Persistent Volume Claims.
+  ## @param valkey.primary.persistence.storageClass Persistent Volume storage class.
+  ## @param valkey.primary.persistence.size Persistent Volume size.
+    persistence:
+      enabled: true
+      storageClass: ""
+      size: 8Gi
+
+  replica:
+    ## @param valkey.replica.persistence.enabled Enable persistence on Valkey replicas nodes using Persistent Volume Claims.
+    ## @param valkey.replica.persistence.storageClass Persistent Volume storage class.
+    ## @param valkey.replica.persistence.size Persistent Volume size.
+    persistence:
+      enabled: true
+      storageClass: ""
+      size: 8Gi
 
   ## @param valkey.sentinel.image.repository Image repository, eg. `bitnamilegacy/sentinel`.
   sentinel:

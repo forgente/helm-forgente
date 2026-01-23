@@ -1192,9 +1192,12 @@ Valkey and [Valkey cluster](#valkey-cluster) cannot be enabled at the same time.
 | `valkey.master.count`                       | Number of Valkey master instances to deploy                                 | `1`                             |
 | `valkey.master.service.ports.valkey`        | Port of Valkey service                                                      | `6379`                          |
 | `valkey.metrics.image.repository`           | Image repository, eg. `bitnamilegacy/redis-exporter`.                       | `bitnamilegacy/redis-exporter`  |
-| `valkey.persistence.enabled`                | Enable persistence on Valkey replicas nodes using Persistent Volume Claims. | `true`                          |
-| `valkey.persistence.storageClass`           | Persistent Volume storage class.                                            | `""`                            |
-| `valkey.persistence.size`                   | Persistent Volume size.                                                     | `8Gi`                           |
+| `valkey.primary.persistence.enabled`        | Enable persistence on Valkey replicas nodes using Persistent Volume Claims. | `true`                          |
+| `valkey.primary.persistence.storageClass`   | Persistent Volume storage class.                                            | `""`                            |
+| `valkey.primary.persistence.size`           | Persistent Volume size.                                                     | `8Gi`                           |
+| `valkey.replica.persistence.enabled`        | Enable persistence on Valkey replicas nodes using Persistent Volume Claims. | `true`                          |
+| `valkey.replica.persistence.storageClass`   | Persistent Volume storage class.                                            | `""`                            |
+| `valkey.replica.persistence.size`           | Persistent Volume size.                                                     | `8Gi`                           |
 | `valkey.sentinel.image.repository`          | Image repository, eg. `bitnamilegacy/sentinel`.                             | `bitnamilegacy/valkey-sentinel` |
 | `valkey.volumePermissions.image.repository` | Image repository, eg. `bitnamilegacy/os-shell`.                             | `bitnamilegacy/os-shell`        |
 
