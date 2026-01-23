@@ -1216,6 +1216,7 @@ Valkey and [Valkey cluster](#valkey-cluster) cannot be enabled at the same time.
 | `postgresql-ha.pgpool.srCheckPassword`             | pgpool srCheckPassword                                           | `changeme4`                       |
 | `postgresql-ha.service.ports.postgresql`           | PostgreSQL service port (overrides `service.ports.postgresql`)   | `5432`                            |
 | `postgresql-ha.persistence.enabled`                | Enable persistence.                                              | `true`                            |
+| `postgresql-ha.persistence.storageClass`           | Persistent Volume Storage Class.                                 | `""`                              |
 | `postgresql-ha.persistence.size`                   | PVC Storage Request for PostgreSQL HA volume                     | `10Gi`                            |
 | `postgresql-ha.volumePermissions.image.repository` | Image repository, eg. `bitnamilegacy/os-shell`.                  | `bitnamilegacy/os-shell`          |
 
