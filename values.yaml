@@ -542,6 +542,14 @@ valkey-cluster:
     image:
       repository: bitnamilegacy/redis-exporter
 
+  ## @param valkey-cluster.persistence.enabled Enable persistence on Valkey replicas nodes using Persistent Volume Claims.
+  ## @param valkey-cluster.persistence.storageClass Persistent Volume storage class.
+  ## @param valkey-cluster.persistence.size Persistent Volume size.
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 8Gi
+
   ## @param valkey-cluster.service.ports.valkey Port of Valkey service
   service:
     ports:
@@ -597,6 +605,14 @@ valkey:
     image:
       repository: bitnamilegacy/redis-exporter
 
+  ## @param valkey.persistence.enabled Enable persistence on Valkey replicas nodes using Persistent Volume Claims.
+  ## @param valkey.persistence.storageClass Persistent Volume storage class.
+  ## @param valkey.persistence.size Persistent Volume size.
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 8Gi
+
   ## @param valkey.sentinel.image.repository Image repository, eg. `bitnamilegacy/sentinel`.
   sentinel:
     image:
@@ -651,8 +667,12 @@ postgresql-ha:
     ports:
       postgresql: 5432
 
+  ## @param postgresql-ha.persistence.enabled Enable persistence.
+  ## @param postgresql-ha.persistence.storageClass Persistent Volume Storage Class.
   ## @param postgresql-ha.persistence.size PVC Storage Request for PostgreSQL HA volume
   persistence:
+    enabled: true
+    storageClass: ""
     size: 10Gi
 
   ## @param postgresql-ha.volumePermissions.image.repository Image repository, eg. `bitnamilegacy/os-shell`.
@@ -683,10 +703,23 @@ postgresql:
   image:
     repository: bitnamilegacy/postgresql
 
-  ## @param postgresql.primary.persistence.size PVC Storage Request for PostgreSQL volume
   primary:
+    ## @param postgresql.primary.persistence.enabled Enable persistence.
+    ## @param postgresql.primary.persistence.storageClass Persistent Volume storage class.
+    ## @param postgresql.primary.persistence.size PVC Storage Request for PostgreSQL volume.
     persistence:
+      enabled: true
+      storageClass: ""
       size: 10Gi
+
+  readReplicas:
+    ## @param postgresql.readReplicas.persistence.enabled Enable PostgreSQL read only data persistence using PVC.
+    ## @param postgresql.readReplicas.persistence.storageClass Persistent Volume storage class.
+    ## @param postgresql.readReplicas.persistence.size PVC Storage Request for PostgreSQL volume.
+    persistence:
+      enabled: true
+      storageClass: ""
+      size: ""
 
   ## @param postgresql.metrics.image.repository Image repository, eg. `bitnamilegacy/postgres-exporter`.
   metrics:
