@@ -64,7 +64,7 @@ stringData:
       
       echo 'Wait for valkey to become avialable...'
       until [ "${RETRY}" -ge "${MAX}" ]; do
-        nc -vz -w2 {{ include "valkey.servicename" . }} {{ include "valkey.port" . }} && break
+        RES_OPTIONS="ndots:0" nc -vz -w2 {{ include "valkey.servicename" . }} {{ include "valkey.port" . }} && break
         RETRY=$[${RETRY}+1]
         echo "...not ready yet (${RETRY}/${MAX})"
       done
