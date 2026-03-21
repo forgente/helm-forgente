@@ -26,9 +26,6 @@ sources:
   - https://docker.gitea.com/gitea
 
 maintainers:
-  # https://gitea.com/rossigee
-  - name: Ross Golder
-    email: ross@golder.org
   # https://gitea.com/volker.raschek
   - name: Markus Pesch
     email: markus.pesch+apps@cryptic.systems
