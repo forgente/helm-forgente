@@ -65,3 +65,41 @@ tests:
         matchRegex:
           path: stringData.server
           pattern: \nROOT_URL=http://provided.example.com
+
+  ################################################
+
+  - it: "[route enabled] uses route host for DOMAIN|SSH_DOMAIN|ROOT_URL"
+    template: templates/gitea/config.yaml
+    set:
+      route:
+        enabled: true
+        host: route.example.com
+    asserts:
+      - documentIndex: 0
+        matchRegex:
+          path: stringData.server
+          pattern: \nDOMAIN=route.example.com
+      - documentIndex: 0
+        matchRegex:
+          path: stringData.server
+          pattern: \nSSH_DOMAIN=route.example.com
+      - documentIndex: 0
+        matchRegex:
+          path: stringData.server
+          pattern: \nROOT_URL=http://route.example.com
+
+  ################################################
+
+  - it: "[route tls termination] uses https for ROOT_URL"
+    template: templates/gitea/config.yaml
+    set:
+      route:
+        enabled: true
+        host: route.example.com
+        tls:
+          termination: edge
+    asserts:
+      - documentIndex: 0
+        matchRegex:
+          path: stringData.server
+          pattern: \nROOT_URL=https://route.example.com

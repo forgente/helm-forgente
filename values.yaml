@@ -62,9 +62,14 @@ imagePullSecrets: []
 
 ## @section Security
 # Security context is only usable with rootless image due to image design
-## @param podSecurityContext.fsGroup Set the shared file system group for all containers in the pod.
-podSecurityContext:
-  fsGroup: 1000
+## @param openshift.enabled Enable OpenShift compatibility defaults for chart-managed pods. Defaults to auto-detect based on the SecurityContextConstraints API.
+## @param openshift.hostUsers Override the PodSpec hostUsers field for chart-managed pods. Defaults to `false` when OpenShift compatibility is enabled.
+openshift:
+  enabled: null
+  hostUsers: null
+
+## @param podSecurityContext Pod security context. On non-OpenShift clusters the chart defaults `fsGroup` to `1000` when this map is empty.
+podSecurityContext: {}
 
 ## @param containerSecurityContext Security context
 containerSecurityContext: {}
@@ -176,6 +181,32 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - git.example.com
+
+## @section Route
+## @param route.enabled Enable OpenShift Route
+## @param route.annotations Route annotations
+## @param route.host Route host. When unset, OpenShift may generate one and Gitea URL defaults fall back to ingress/service values.
+## @param route.path Route path
+## @param route.wildcardPolicy Route wildcard policy
+## @param route.tls.termination Route TLS termination type
+## @param route.tls.insecureEdgeTerminationPolicy Route insecure edge termination policy
+## @param route.tls.key Route TLS key
+## @param route.tls.certificate Route TLS certificate
+## @param route.tls.caCertificate Route TLS CA certificate
+## @param route.tls.destinationCACertificate Route destination CA certificate
+route:
+  enabled: false
+  annotations: {}
+  host: ""
+  path: ""
+  wildcardPolicy: None
+  tls:
+    termination:
+    insecureEdgeTerminationPolicy:
+    key:
+    certificate:
+    caCertificate:
+    destinationCACertificate:
 
 ## @section deployment
 #

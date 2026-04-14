@@ -280,6 +280,37 @@ If `.Values.image.rootless: true`, then the following will occur. In case you us
 
   [see deployment.yaml](./templates/gitea/deployment.yaml) template inside container "env" declarations
 
+#### OpenShift Compatibility
+
+When installing on OpenShift, enable the compatibility profile so chart-managed pods render SCC-safe defaults and the Gitea init containers stop forcing `runAsUser: 1000`:
+
+```yaml
+openshift:
+  enabled: true
+```
+
+When enabled, the chart applies `allowPrivilegeEscalation: false`, drops all
+Linux capabilities, sets `runAsNonRoot: true`, uses
+`seccompProfile.type: RuntimeDefault`, and sets `hostUsers: false` unless
+`openshift.hostUsers` is overridden.
+
+The deployment keeps the existing vanilla Kubernetes behavior when OpenShift
+compatibility is disabled. Auto-detection relies on the
+`security.openshift.io/v1/SecurityContextConstraints` API, so set
+`openshift.enabled: true` explicitly when rendering outside a live cluster.
+
+If you also want to expose Gitea through an OpenShift Route, enable the optional Route resource:
+
+```yaml
+route:
+  enabled: true
+  host: git.apps.example.com
+  tls:
+    termination: edge
+```
+
+When `route.host` is set, the chart uses it for `DOMAIN`, `SSH_DOMAIN`, and `ROOT_URL`. Setting `route.tls.termination` also switches the default `ROOT_URL` scheme to `https`.
+
 #### Session, Cache and Queue
 
 The session, cache and queue settings are set to use the built-in Valkey Cluster sub-chart dependency.
@@ -975,12 +1006,14 @@ To comply with the Gitea helm chart definition of the digest parameter, a "custo
 
 ### Security
 
-| Name                         | Description                                                     | Value  |
-| ---------------------------- | --------------------------------------------------------------- | ------ |
-| `podSecurityContext.fsGroup` | Set the shared file system group for all containers in the pod. | `1000` |
-| `containerSecurityContext`   | Security context                                                | `{}`   |
-| `securityContext`            | Run init and Gitea containers as a specific securityContext     | `{}`   |
-| `podDisruptionBudget`        | Pod disruption budget                                           | `{}`   |
+| Name                       | Description                                                                                                                          | Value |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| `openshift.enabled`        | Enable OpenShift compatibility defaults for chart-managed pods. Defaults to auto-detect based on the SecurityContextConstraints API. | `nil` |
+| `openshift.hostUsers`      | Override the PodSpec hostUsers field for chart-managed pods. Defaults to `false` when OpenShift compatibility is enabled.            | `nil` |
+| `podSecurityContext`       | Pod security context. On non-OpenShift clusters the chart defaults `fsGroup` to `1000` when this map is empty.                       | `{}`  |
+| `containerSecurityContext` | Security context                                                                                                                     | `{}`  |
+| `securityContext`          | Run init and Gitea containers as a specific securityContext                                                                          | `{}`  |
+| `podDisruptionBudget`      | Pod disruption budget                                                                                                                | `{}`  |
 
 ### Service
 
@@ -1025,6 +1058,22 @@ To comply with the Gitea helm chart definition of the digest parameter, a "custo
 | `ingress.hosts[0].host`          | Default Ingress host            | `git.example.com` |
 | `ingress.hosts[0].paths[0].path` | Default Ingress path            | `/`               |
 | `ingress.tls`                    | Ingress tls settings            | `[]`              |
+
+### Route
+
+| Name                                      | Description                                                                                                    | Value   |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------- |
+| `route.enabled`                           | Enable OpenShift Route                                                                                         | `false` |
+| `route.annotations`                       | Route annotations                                                                                              | `{}`    |
+| `route.host`                              | Route host. When unset, OpenShift may generate one and Gitea URL defaults fall back to ingress/service values. | `""`    |
+| `route.path`                              | Route path                                                                                                     | `""`    |
+| `route.wildcardPolicy`                    | Route wildcard policy                                                                                          | `None`  |
+| `route.tls.termination`                   | Route TLS termination type                                                                                     | `nil`   |
+| `route.tls.insecureEdgeTerminationPolicy` | Route insecure edge termination policy                                                                         | `nil`   |
+| `route.tls.key`                           | Route TLS key                                                                                                  | `nil`   |
+| `route.tls.certificate`                   | Route TLS certificate                                                                                          | `nil`   |
+| `route.tls.caCertificate`                 | Route TLS CA certificate                                                                                       | `nil`   |
+| `route.tls.destinationCACertificate`      | Route destination CA certificate                                                                               | `nil`   |
 
 ### deployment
 

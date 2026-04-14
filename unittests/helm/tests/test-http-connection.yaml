@@ -1,0 +1,24 @@
+suite: test connection template
+release:
+  name: gitea-unittests
+  namespace: testing
+templates:
+  - templates/tests/test-http-connection.yaml
+tests:
+  - it: renders openshift-compatible defaults for the test pod
+    set:
+      openshift.enabled: true
+    asserts:
+      - equal:
+          path: spec.hostUsers
+          value: false
+      - equal:
+          path: spec.containers[0].securityContext
+          value:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
