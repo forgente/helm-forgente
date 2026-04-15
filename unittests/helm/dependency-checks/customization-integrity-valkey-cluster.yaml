@@ -87,4 +87,4 @@ tests:
       - documentIndex: 0
         matchRegex:
           path: stringData["configure_gitea.sh"]
-          pattern: nc -vz -w2 gitea-unittests-valkey-cluster-headless.testing.svc.cluster.local 6379
+          pattern: nc -vz -w2 gitea-unittests-valkey-cluster-headless.testing.svc 6379
