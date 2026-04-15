@@ -30,7 +30,7 @@ tests:
         equal:
           path: stringData.queue
           value: |-
-            CONN_STR=redis://:changeme@gitea-unittests-valkey-headless.testing.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&
+            CONN_STR=redis://:changeme@gitea-unittests-valkey-primary.testing.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&
             TYPE=redis
 
   - it: "queue is configured correctly for 'levelDB' when valkey (and valkey-cluster) is disabled"

@@ -29,18 +29,19 @@ tests:
           path: data["valkey-password"]
           value: "Z2l0ZWEtcGFzc3dvcmQ="
   - it: "[valkey] renders the referenced service"
-    template: charts/valkey/templates/headless-svc.yaml
+    template: charts/valkey/templates/primary/service.yaml
     asserts:
       - containsDocument:
           kind: Service
           apiVersion: v1
-          name: gitea-unittests-valkey-headless
+          name: gitea-unittests-valkey-primary
           namespace: testing
       - documentIndex: 0
         contains:
           path: spec.ports
           content:
             name: tcp-redis
+            nodePort: null
             port: 6379
             targetPort: redis
   - it: "[gitea] waits for valkey to be up and running"
@@ -49,4 +50,4 @@ tests:
       - documentIndex: 0
         matchRegex:
           path: stringData["configure_gitea.sh"]
-          pattern: nc -vz -w2 gitea-unittests-valkey-headless.testing.svc.cluster.local 6379
+          pattern: nc -vz -w2 gitea-unittests-valkey-primary.testing.svc.cluster.local 6379

@@ -11,9 +11,8 @@ tests:
     set:
       openshift.enabled: true
     asserts:
-      - equal:
+      - notExists:
           path: spec.template.spec.hostUsers
-          value: false
       - notExists:
           path: spec.template.spec.securityContext
       - equal:
@@ -94,3 +93,14 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].securityContext.runAsGroup
           value: 1000620000
+
+  - it: renders an explicit hostUsers=false override on OpenShift
+    template: templates/gitea/deployment.yaml
+    set:
+      openshift:
+        enabled: true
+        hostUsers: false
+    asserts:
+      - equal:
+          path: spec.template.spec.hostUsers
+          value: false

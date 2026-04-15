@@ -31,7 +31,7 @@ tests:
           path: stringData.cache
           value: |-
             ADAPTER=redis
-            HOST=redis://:changeme@gitea-unittests-valkey-headless.testing.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&
+            HOST=redis://:changeme@gitea-unittests-valkey-primary.testing.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&
 
   - it: "cache is configured correctly for 'memory' when valkey (or valkey-cluster) is disabled"
     template: templates/gitea/config.yaml
