@@ -9,27 +9,51 @@ function setup() {
   export GITEA_APP_INI="$BATS_TEST_TMPDIR/app.ini"
   export TMP_EXISTING_ENVS_FILE="$BATS_TEST_TMPDIR/existing-envs"
   export ENV_TO_INI_MOUNT_POINT="$BATS_TEST_TMPDIR/env-to-ini-mounts"
+  export GITEA_EDIT_INI_EXPECTED=0
+  export PATH="$BATS_TEST_TMPDIR/bin:$PATH"
 
-  stub gitea \
-      "generate secret INTERNAL_TOKEN : echo 'mocked-internal-token'" \
-      "generate secret SECRET_KEY : echo 'mocked-secret-key'" \
-      "generate secret JWT_SECRET : echo 'mocked-jwt-secret'" \
-      "generate secret LFS_JWT_SECRET : echo 'mocked-lfs-jwt-secret'"
+  mkdir -p "$BATS_TEST_TMPDIR/bin"
+  cat >"$BATS_TEST_TMPDIR/bin/gitea" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+case "$*" in
+  'generate secret INTERNAL_TOKEN')
+    echo 'mocked-internal-token'
+    ;;
+  'generate secret SECRET_KEY')
+    echo 'mocked-secret-key'
+    ;;
+  'generate secret JWT_SECRET')
+    echo 'mocked-jwt-secret'
+    ;;
+  'generate secret LFS_JWT_SECRET')
+    echo 'mocked-lfs-jwt-secret'
+    ;;
+  "config edit-ini --apply-env --config $GITEA_APP_INI --out $GITEA_APP_INI")
+    if [ "$GITEA_EDIT_INI_EXPECTED" -eq 1 ]; then
+      echo 'Stubbed gitea config edit-ini was called!'
+      exit 0
+    fi
+
+    echo 'Unexpected gitea config edit-ini invocation' >&2
+    exit 127
+    ;;
+  *)
+    echo "Unexpected gitea invocation: $*" >&2
+    exit 127
+    ;;
+esac
+EOF
+  chmod +x "$BATS_TEST_TMPDIR/bin/gitea"
 }
 
 function teardown() {
-  unstub gitea
-  # This condition exists due to https://github.com/jasonkarns/bats-mock/pull/37 being still open
-  if [ $ENV_TO_INI_EXPECTED -eq 1 ]; then
-    unstub environment-to-ini
-  fi
+  :
 }
 
-# This function exists due to https://github.com/jasonkarns/bats-mock/pull/37 being still open
-function expect_environment_to_ini_call() {
-  export ENV_TO_INI_EXPECTED=1
-  stub environment-to-ini \
-    "-o $GITEA_APP_INI : echo 'Stubbed environment-to-ini was called!'"
+function expect_gitea_config_edit_ini_call() {
+  export GITEA_EDIT_INI_EXPECTED=1
 }
 
 function execute_test_script() {
@@ -56,18 +80,18 @@ function write_mounted_file() {
 }
 
 @test "works as expected when nothing is configured" {
-  expect_environment_to_ini_call
+  expect_gitea_config_edit_ini_call
   run $PROJECT_ROOT/scripts/init-containers/config/config_environment.sh
 
   assert_success
   assert_line '...Initial secrets generated'
   assert_line 'Reloading preset envs...'
   assert_line '=== All configuration sources loaded ==='
-  assert_line 'Stubbed environment-to-ini was called!'
+  assert_line 'Stubbed gitea config edit-ini was called!'
 }
 
 @test "exports initial secrets" {
-  expect_environment_to_ini_call
+  expect_gitea_config_edit_ini_call
   run execute_test_script
 
   assert_success
@@ -78,7 +102,7 @@ function write_mounted_file() {
 }
 
 @test "does NOT export initial secrets when app.ini already exists" {
-  expect_environment_to_ini_call
+  expect_gitea_config_edit_ini_call
   touch $GITEA_APP_INI
 
   run execute_test_script
@@ -92,7 +116,7 @@ function write_mounted_file() {
 }
 
 @test "ensures that preset environment variables take precedence over auto-generated ones" {
-  expect_environment_to_ini_call
+  expect_gitea_config_edit_ini_call
   export GITEA__OAUTH2__JWT_SECRET="pre-defined-jwt-secret"
 
   run execute_test_script
@@ -102,7 +126,7 @@ function write_mounted_file() {
 }
 
 @test "ensures that preset environment variables take precedence over mounted ones" {
-  expect_environment_to_ini_call
+  expect_gitea_config_edit_ini_call
   export GITEA__OAUTH2__JWT_SECRET="pre-defined-jwt-secret"
   write_mounted_file "inlines" "oauth2" "$(cat << EOF
 JWT_SECRET=inline-jwt-secret
@@ -117,7 +141,7 @@ EOF
 }
 
 @test "ensures that additionals take precedence over inlines" {
-  expect_environment_to_ini_call
+  expect_gitea_config_edit_ini_call
   write_mounted_file "inlines" "oauth2" "$(cat << EOF
 JWT_SECRET=inline-jwt-secret
 EOF
@@ -136,7 +160,7 @@ EOF
 }
 
 @test "ensures that dotted/dashed sections are properly masked" {
-  expect_environment_to_ini_call
+  expect_gitea_config_edit_ini_call
   write_mounted_file "inlines" "repository.pull-request" "$(cat << EOF
 WORK_IN_PROGRESS_PREFIXES=WIP:,[WIP]
 EOF
@@ -152,7 +176,7 @@ EOF
 ##### THIS IS A BUG, BUT I WANT IT TO BE COVERED BY TESTS #####
 ###############################################################
 @test "ensures uppercase section and setting names (🐞)" {
-  expect_environment_to_ini_call
+  expect_gitea_config_edit_ini_call
   export GITEA__oauth2__JwT_Secret="pre-defined-jwt-secret"
   write_mounted_file "inlines" "repository.pull-request" "$(cat << EOF
 WORK_IN_progress_PREFIXES=WIP:,[WIP]
@@ -167,7 +191,7 @@ EOF
 }
 
 @test "treats top-level configuration as section-less" {
-  expect_environment_to_ini_call
+  expect_gitea_config_edit_ini_call
   write_mounted_file "inlines" "_generals_" "$(cat << EOF
 APP_NAME=Hello top-level configuration
 RUN_MODE=dev
