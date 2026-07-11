@@ -1,11 +1,11 @@
 apiVersion: v2
-name: gitea
-description: Gitea Helm chart for Kubernetes
+name: forgente
+description: Forgente Helm chart for Kubernetes
 type: application
 version: 0.0.0
 # renovate datasource=github-releases depName=go-gitea/gitea extractVersion=^v(?<version>.*)$
 appVersion: 1.26.4
-icon: https://gitea.com/assets/img/logo.svg
+icon: https://raw.githubusercontent.com/forgente/forgente/main/public/assets/img/logo.svg
 
 annotations:
   artifacthub.io/links: |
