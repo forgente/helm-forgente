@@ -72,7 +72,7 @@ Additionally, this chart allows to provide LDAP and admin user configuration wit
 ## Update and versioning policy
 
 The Gitea helm chart versioning does not follow Gitea's versioning.
-The latest chart version can be looked up in [https://dl.gitea.com/charts](https://dl.gitea.com/charts) or in the [repository releases](https://gitea.com/gitea/helm-gitea/releases).
+The latest chart version can be looked up in [https://dl.forgente.com/charts](https://dl.forgente.com/charts) or in the [repository releases](https://github.com/forgente/helm-forgente/releases).
 
 The chart aims to follow Gitea's releases closely.
 There might be times when the chart is behind the latest Gitea release.
@@ -129,21 +129,9 @@ and look up the image tag which fits your needs on Dockerhub.
 ## Installing
 
 ```sh
-helm repo add gitea-charts https://dl.gitea.com/charts/
+helm repo add forgente-charts https://dl.forgente.com/charts/
 helm repo update
-helm install gitea gitea-charts/gitea
-```
-
-Alternatively, the chart can also be installed from Dockerhub (since v9.6.0)
-
-```sh
-helm install gitea oci://registry-1.docker.io/giteacharts/gitea
-```
-
-To avoid potential Dockerhub rate limits, the chart can also be installed via [docker.gitea.com](https://blog.gitea.com/docker-registry-update/) (since v9.6.0)
-
-```sh
-helm install gitea oci://docker.gitea.com/charts/gitea
+helm install forgente forgente-charts/forgente
 ```
 
 When upgrading, please refer to the [Upgrading](#upgrading) section at the bottom of this document for major and breaking changes.
