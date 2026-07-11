@@ -1,0 +1,75 @@
+# Forgente adaptation of .gitea/workflows/release-version.yml: runs on GitHub
+# Actions, publishes the chart index to dl.forgente.com/charts (S3) and a
+# GitHub release. No OCI push: docker.io/forgente/forgente is the app image
+# repo — an OCI chart of the same name would collide.
+name: generate-chart
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  generate-chart-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub release
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "3.21.2" # renovate: datasource=docker depName=alpine/helm
+
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v7
+        with:
+          gpg_private_key: ${{ secrets.GPGSIGN_KEY }}
+          passphrase: ${{ secrets.GPGSIGN_PASSPHRASE }}
+          fingerprint: 67129BAD57A2C8D2186032489D6FD2FD6E0B9BA5
+
+      - name: Add Artifacthub.io annotations
+        run: |
+          NEW_TAG="$(git tag --sort=-version:refname | head --lines 1)"
+          OLD_TAG="$(git tag --sort=-version:refname | head --lines 2 | tail --lines 1)"
+          .gitea/scripts/add-annotations.sh "${OLD_TAG}" "${NEW_TAG}"
+
+      - name: Print Chart.yaml
+        run: cat Chart.yaml
+
+      # Using helm gpg plugin as 'helm package --sign' has issues with gpg2: https://github.com/helm/helm/issues/2843
+      - name: package chart
+        run: |
+          # FIXME: use upstream after https://github.com/technosophos/helm-gpg/issues/1 is solved
+          helm plugin install https://github.com/pat-s/helm-gpg
+          helm dependency build
+          helm package --version "${GITHUB_REF#refs/tags/v}" ./
+          mkdir charts
+          mv forgente-*.tgz charts/
+          # merge into the existing index when one is already published
+          if curl --fail --location --output charts/index.yaml --silent --show-error https://dl.forgente.com/charts/index.yaml; then
+            helm repo index charts/ --url https://dl.forgente.com/charts --merge charts/index.yaml
+          else
+            helm repo index charts/ --url https://dl.forgente.com/charts
+          fi
+
+      - name: configure aws
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Copy files to S3
+        run: |
+          aws s3 sync charts/ "s3://${{ secrets.AWS_S3_BUCKET }}/charts/" --no-progress
+
+      - name: create github release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF#refs/tags/}" --title "${GITHUB_REF#refs/tags/}" --generate-notes charts/forgente-*.tgz*
