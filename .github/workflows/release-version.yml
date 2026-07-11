@@ -48,13 +48,14 @@ jobs:
           helm plugin install https://github.com/pat-s/helm-gpg
           helm dependency build
           helm package --version "${GITHUB_REF#refs/tags/v}" ./
-          mkdir charts
-          mv forgente-*.tgz charts/
+          # NB: "charts/" is taken - helm dependency build vendors subcharts there
+          mkdir chart-repo
+          mv forgente-*.tgz chart-repo/
           # merge into the existing index when one is already published
-          if curl --fail --location --output charts/index.yaml --silent --show-error https://dl.forgente.com/charts/index.yaml; then
-            helm repo index charts/ --url https://dl.forgente.com/charts --merge charts/index.yaml
+          if curl --fail --location --output chart-repo/index.yaml --silent --show-error https://dl.forgente.com/charts/index.yaml; then
+            helm repo index chart-repo/ --url https://dl.forgente.com/charts --merge chart-repo/index.yaml
           else
-            helm repo index charts/ --url https://dl.forgente.com/charts
+            helm repo index chart-repo/ --url https://dl.forgente.com/charts
           fi
 
       - name: configure aws
@@ -66,10 +67,10 @@ jobs:
 
       - name: Copy files to S3
         run: |
-          aws s3 sync charts/ "s3://${{ secrets.AWS_S3_BUCKET }}/charts/" --no-progress
+          aws s3 sync chart-repo/ "s3://${{ secrets.AWS_S3_BUCKET }}/charts/" --no-progress
 
       - name: create github release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "${GITHUB_REF#refs/tags/}" --title "${GITHUB_REF#refs/tags/}" --generate-notes charts/forgente-*.tgz*
+          gh release create "${GITHUB_REF#refs/tags/}" --title "${GITHUB_REF#refs/tags/}" --generate-notes chart-repo/forgente-*.tgz*
