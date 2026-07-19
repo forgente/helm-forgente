@@ -1,0 +1,117 @@
+suite: Test Gateway API httpRoute.yaml
+release:
+  name: gitea-unittests
+  namespace: testing
+templates:
+  - templates/gitea/httpRoute.yaml
+tests:
+  - it: should not render when gatewayAPI.enabled is false
+    set:
+      gatewayAPI:
+        enabled: false
+        core:
+          httpRoute:
+            enabled: true
+            hostnames:
+              - git.example.com
+            parentRefs:
+              - name: shared-gateway
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not render when httpRoute.enabled is false
+    set:
+      gatewayAPI:
+        enabled: true
+      gatewayAPI.core.httpRoute.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render a single HTTPRoute with default rule
+    set:
+      gatewayAPI:
+        enabled: true
+        core:
+          httpRoute:
+            enabled: true
+            annotations:
+              example.io/owner: gitea
+            hostnames:
+              - git.example.com
+            parentRefs:
+              - name: shared-gateway
+                namespace: gateway-system
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: HTTPRoute
+      - equal:
+          path: apiVersion
+          value: gateway.networking.k8s.io/v1
+      - equal:
+          path: metadata.name
+          value: gitea-unittests
+      - equal:
+          path: metadata.annotations["example.io/owner"]
+          value: gitea
+      - equal:
+          path: spec.parentRefs[0].name
+          value: shared-gateway
+      - equal:
+          path: spec.parentRefs[0].namespace
+          value: gateway-system
+      - equal:
+          path: spec.hostnames[0]
+          value: git.example.com
+      - equal:
+          path: spec.rules[0].matches[0].path.value
+          value: /
+      - equal:
+          path: spec.rules[0].backendRefs[0].group
+          value: ""
+      - equal:
+          path: spec.rules[0].backendRefs[0].kind
+          value: Service
+      - equal:
+          path: spec.rules[0].backendRefs[0].name
+          value: gitea-unittests-http
+      - equal:
+          path: spec.rules[0].backendRefs[0].port
+          value: 3000
+      - equal:
+          path: spec.rules[0].backendRefs[0].weight
+          value: 1
+
+  - it: should fail when parentRefs missing
+    set:
+      gatewayAPI:
+        enabled: true
+        core:
+          httpRoute:
+            enabled: true
+            hostnames:
+              - git.example.com
+    asserts:
+      - failedTemplate:
+          errorMessage: gatewayAPI.core.httpRoute.parentRefs is required
+
+  - it: hostname tpl rendering
+    set:
+      global:
+        giteaHostName: gitea.tpl.example.com
+      gatewayAPI:
+        enabled: true
+        core:
+          httpRoute:
+            enabled: true
+            hostnames:
+              - "{{ .Values.global.giteaHostName }}"
+            parentRefs:
+              - name: gw
+    asserts:
+      - equal:
+          path: spec.hostnames[0]
+          value: gitea.tpl.example.com

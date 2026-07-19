@@ -1,0 +1,105 @@
+suite: Test Gateway API clientSettingsPolicy.yaml
+release:
+  name: gitea-unittests
+  namespace: testing
+templates:
+  - templates/gitea/clientSettingsPolicy.yaml
+tests:
+  - it: should not render when gatewayAPI.enabled is false
+    set:
+      gatewayAPI:
+        enabled: false
+        nginx:
+          clientSettingsPolicies:
+            enabled: true
+            body:
+              maxSize: 100m
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not render when clientSettingsPolicies.enabled is false
+    set:
+      gatewayAPI:
+        enabled: true
+      gatewayAPI.nginx.clientSettingsPolicies.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render a ClientSettingsPolicy targeting the HTTPRoute by default
+    set:
+      gatewayAPI:
+        enabled: true
+        nginx:
+          clientSettingsPolicies:
+            enabled: true
+            body:
+              maxSize: 100m
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ClientSettingsPolicy
+      - equal:
+          path: apiVersion
+          value: gateway.nginx.org/v1alpha1
+      - equal:
+          path: metadata.name
+          value: gitea-unittests
+      - equal:
+          path: spec.targetRef.group
+          value: gateway.networking.k8s.io
+      - equal:
+          path: spec.targetRef.kind
+          value: HTTPRoute
+      - equal:
+          path: spec.targetRef.name
+          value: gitea-unittests
+      - equal:
+          path: spec.body.maxSize
+          value: 100m
+
+  - it: should honor a custom targetRef
+    set:
+      gatewayAPI:
+        enabled: true
+        nginx:
+          clientSettingsPolicies:
+            enabled: true
+            targetRef:
+              group: gateway.networking.k8s.io
+              kind: Gateway
+              name: shared-gateway
+            body:
+              maxSize: 100m
+    asserts:
+      - equal:
+          path: spec.targetRef.kind
+          value: Gateway
+      - equal:
+          path: spec.targetRef.name
+          value: shared-gateway
+
+  - it: should fail when body is missing
+    set:
+      gatewayAPI:
+        enabled: true
+        nginx:
+          clientSettingsPolicies:
+            enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: gatewayAPI.nginx.clientSettingsPolicies.body is required
+
+  - it: should fail when body is an empty dict
+    set:
+      gatewayAPI:
+        enabled: true
+        nginx:
+          clientSettingsPolicies:
+            enabled: true
+            body: {}
+    asserts:
+      - failedTemplate:
+          errorMessage: gatewayAPI.nginx.clientSettingsPolicies.body is required
