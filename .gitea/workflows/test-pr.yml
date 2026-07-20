@@ -25,7 +25,7 @@ jobs:
       - name: install chart dependencies
         run: helm dependency build
       - name: lint
-        run: helm lint
+        run: helm lint .
       - name: template
         run: helm template --debug gitea-helm .
       - name: prepare unit test environment
