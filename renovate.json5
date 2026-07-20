@@ -42,11 +42,14 @@
     {
       description: "Automatically detect new Gitea releases",
       customType: "regex",
+      datasourceTemplate: "github-releases",
+      depNameTemplate: "gitea/gitea",
+      extractVersionTemplate: "^v(?<version>.*)$",
       managerFilePatterns: [
-        "/(^|/)Chart\\.yaml$/",
+        "/(^|/)Chart\\.ya?ml$/",
       ],
       matchStrings: [
-        "# renovate datasource=(?<datasource>\\S+) depName=(?<depName>\\S+) extractVersion=(?<extractVersion>\\S+)\\nappVersion:\\s?(?<currentValue>\\S+)\\n",
+        "^appVersion:\\s+[\"']?(?<currentVersion>\\S+)[\"']?$",
       ],
     },
   ],
