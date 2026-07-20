@@ -1,0 +1,79 @@
+suite: Test Gateway API tcpRoute.yaml
+release:
+  name: gitea-unittests
+  namespace: testing
+templates:
+  - templates/gitea/tcpRoute.yaml
+tests:
+  - it: should not render when gatewayAPI.enabled is false
+    set:
+      gatewayAPI:
+        enabled: false
+        core:
+          tcpRoute:
+            enabled: true
+            parentRefs:
+              - name: shared-gateway
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not render when tcpRoute.enabled is false
+    set:
+      gatewayAPI:
+        enabled: true
+      gatewayAPI.core.tcpRoute.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render a TCPRoute defaulting to the SSH service
+    set:
+      gatewayAPI:
+        enabled: true
+        core:
+          tcpRoute:
+            enabled: true
+            parentRefs:
+              - name: shared-gateway
+                sectionName: ssh
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: TCPRoute
+      - equal:
+          path: apiVersion
+          value: gateway.networking.k8s.io/v1alpha2
+      - equal:
+          path: metadata.name
+          value: gitea-unittests
+      - equal:
+          path: spec.parentRefs[0].sectionName
+          value: ssh
+      - equal:
+          path: spec.rules[0].backendRefs[0].group
+          value: ""
+      - equal:
+          path: spec.rules[0].backendRefs[0].kind
+          value: Service
+      - equal:
+          path: spec.rules[0].backendRefs[0].name
+          value: gitea-unittests-ssh
+      - equal:
+          path: spec.rules[0].backendRefs[0].port
+          value: 22
+      - equal:
+          path: spec.rules[0].backendRefs[0].weight
+          value: 1
+
+  - it: should fail when parentRefs missing
+    set:
+      gatewayAPI:
+        enabled: true
+        core:
+          tcpRoute:
+            enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: gatewayAPI.core.tcpRoute.parentRefs is required

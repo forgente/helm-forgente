@@ -103,3 +103,56 @@ tests:
         matchRegex:
           path: stringData.server
           pattern: \nROOT_URL=https://route.example.com
+
+  ################################################
+
+  - it: "[HTTPRoute enabled] uses first hostname for DOMAIN|SSH_DOMAIN|ROOT_URL"
+    template: templates/gitea/config.yaml
+    set:
+      ingress:
+        hosts: []
+      gatewayAPI:
+        enabled: true
+        core:
+          httpRoute:
+            enabled: true
+            hostnames:
+              - gw.example.com
+            parentRefs:
+              - name: shared-gateway
+    asserts:
+      - documentIndex: 0
+        matchRegex:
+          path: stringData.server
+          pattern: \nDOMAIN=gw.example.com
+      - documentIndex: 0
+        matchRegex:
+          path: stringData.server
+          pattern: \nSSH_DOMAIN=gw.example.com
+      - documentIndex: 0
+        matchRegex:
+          path: stringData.server
+          pattern: \nROOT_URL=http://gw.example.com
+
+  ################################################
+
+  - it: "[HTTPRoute tls] switches ROOT_URL to https"
+    template: templates/gitea/config.yaml
+    set:
+      ingress:
+        hosts: []
+      gatewayAPI:
+        enabled: true
+        core:
+          httpRoute:
+            enabled: true
+            tls: true
+            hostnames:
+              - gw.example.com
+            parentRefs:
+              - name: shared-gateway
+    asserts:
+      - documentIndex: 0
+        matchRegex:
+          path: stringData.server
+          pattern: \nROOT_URL=https://gw.example.com
