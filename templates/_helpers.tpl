@@ -234,9 +234,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{- define "valkey.servicename" -}}
 {{- if (index .Values "valkey-cluster").enabled -}}
-{{- printf "%s-valkey-cluster-headless.%s.svc" .Release.Name .Release.Namespace -}}
+{{- printf "%s-valkey-cluster-headless.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
 {{- else if (index .Values "valkey").enabled -}}
-{{- printf "%s-valkey-primary.%s.svc" .Release.Name .Release.Namespace -}}
+{{- printf "%s-valkey-primary.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
 {{- end -}}
 {{- end -}}
 

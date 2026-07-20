@@ -50,4 +50,13 @@ tests:
       - documentIndex: 0
         matchRegex:
           path: stringData["configure_gitea.sh"]
-          pattern: nc -vz -w2 gitea-unittests-valkey-primary.testing.svc 6379
+          pattern: nc -vz -w2 gitea-unittests-valkey-primary.testing.svc.cluster.local 6379
+  - it: "[gitea] waits for valkey to be up and running with custom cluster domain"
+    set:
+      clusterDomain: my-special-cluster.local
+    template: templates/gitea/init.yaml
+    asserts:
+      - documentIndex: 0
+        matchRegex:
+          path: stringData["configure_gitea.sh"]
+          pattern: nc -vz -w2 gitea-unittests-valkey-primary.testing.svc.my-special-cluster.local 6379
