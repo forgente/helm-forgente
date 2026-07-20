@@ -54,7 +54,6 @@
   - [LivenessProbe](#livenessprobe)
   - [ReadinessProbe](#readinessprobe)
   - [StartupProbe](#startupprobe)
-  - [valkey-cluster](#valkey-cluster)
   - [valkey](#valkey)
   - [PostgreSQL HA](#postgresql-ha)
   - [PostgreSQL](#postgresql)
@@ -98,14 +97,13 @@ Users can also configure their own external providers via the configuration.
 These dependencies are enabled by default:
 
 - PostgreSQL HA ([Bitnami PostgreSQL-HA](https://github.com/bitnami/charts/blob/main/bitnami/postgresql-ha/Chart.yaml))
-- Valkey-Cluster ([Bitnami Valkey-Cluster](https://github.com/bitnami/charts/blob/main/bitnami/valkey-cluster/Chart.yaml))
+- Valkey ([Official Valkey Helm Chart](https://github.com/valkey-io/valkey-helm))
 
 ### Non-HA Dependencies
 
 Alternatively, the following non-HA replacements are available:
 
 - PostgreSQL ([Bitnami PostgreSQL](https://github.com/bitnami/charts/blob/main/bitnami/postgresql/Chart.yaml))
-- Valkey ([Bitnami Valkey](https://github.com/bitnami/charts/blob/main/bitnami/valkey/Chart.yaml))
 
 ### Dependency Versioning
 
@@ -123,8 +121,7 @@ Please double-check the image repository and available tags in the sub-chart:
 
 - [PostgreSQL-HA](https://hub.docker.com/r/bitnami/postgresql-repmgr/tags)
 - [PostgreSQL](https://hub.docker.com/r/bitnami/postgresql/tags)
-- [Valkey Cluster](https://hub.docker.com/r/bitnami/valkey-cluster/tags)
-- [Valkey](https://hub.docker.com/r/bitnami/valkey/tags)
+- [Valkey](https://hub.docker.com/r/valkey/valkey/tags)
 
 and look up the image tag which fits your needs on Dockerhub.
 
@@ -326,7 +323,7 @@ If Valkey Cluster is disabled, the chart will fall back to the Gitea defaults wh
 While these will work and even not cause immediate issues after startup, **they are not recommended for production use**.
 Reasons being that a single pod will take on all the work for `session` and `cache` tasks in its available memory.
 It is likely that the pod will run out of memory or will face substantial memory spikes, depending on the workload.
-External tools such as `valkey-cluster` or `memcached` handle these workloads much better.
+External tools such as `valkey` or `memcached` handle these workloads much better.
 
 ### Single-Pod Configurations
 
@@ -339,8 +336,6 @@ If HA is not needed/desired, the following configurations can be used to deploy 
    <summary>values.yml</summary>
 
    ```yaml
-   valkey-cluster:
-     enabled: false
    valkey:
      enabled: true
    postgresql:
@@ -372,8 +367,6 @@ If HA is not needed/desired, the following configurations can be used to deploy 
    <summary>values.yml</summary>
 
    ```yaml
-   valkey-cluster:
-     enabled: false
    valkey:
      enabled: false
    postgresql:
@@ -576,18 +569,12 @@ More about this issue [under this link](https://gitea.com/gitea/helm-gitea/issue
 
 ### Cache
 
-The cache handling is done via `valkey-cluster` (via the `bitnami` chart) by default.
-This deployment is HA-ready but can also be used for single-pod deployments.
-By default, 6 replicas are deployed for a working `valkey-cluster` deployment.
-Many cloud providers offer a managed valkey service, which can be used instead of the built-in `valkey-cluster`.
+The cache handling is done via `valkey` (via the [official Valkey Helm chart](https://github.com/valkey-io/valkey-helm)) by default.
 
 ```yaml
-valkey-cluster:
+valkey:
   enabled: true
 ```
-
-⚠️ The valkey charts [do not work well with special characters in the password](https://gitea.com/gitea/helm-chart/issues/690).
-Consider omitting such or open an issue in the Bitnami repo and let us know once this got fixed.
 
 ### Persistence
 
@@ -1245,48 +1232,29 @@ To comply with the Gitea helm chart definition of the digest parameter, a "custo
 | `gitea.startupProbe.successThreshold`    | Success threshold for startup probe             | `1`     |
 | `gitea.startupProbe.failureThreshold`    | Failure threshold for startup probe             | `10`    |
 
-### valkey-cluster
-
-Valkey cluster and [Valkey](#valkey) cannot be enabled at the same time.
-
-| Name                                                | Description                                                                 | Value                          |
-| --------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------ |
-| `valkey-cluster.enabled`                            | Enable valkey cluster                                                       | `true`                         |
-| `valkey-cluster.usePassword`                        | Whether to use password authentication.                                     | `false`                        |
-| `valkey-cluster.usePasswordFiles`                   | Whether to mount passwords as files instead of environment variables.       | `false`                        |
-| `valkey-cluster.image.repository`                   | Image repository, eg. `bitnamilegacy/valkey-cluster`.                       | `bitnamilegacy/valkey-cluster` |
-| `valkey-cluster.cluster.nodes`                      | Number of valkey cluster master nodes                                       | `3`                            |
-| `valkey-cluster.cluster.replicas`                   | Number of valkey cluster master node replicas                               | `0`                            |
-| `valkey-cluster.metrics.image.repository`           | Image repository, eg. `bitnamilegacy/redis-exporter`.                       | `bitnamilegacy/redis-exporter` |
-| `valkey-cluster.persistence.enabled`                | Enable persistence on Valkey replicas nodes using Persistent Volume Claims. | `true`                         |
-| `valkey-cluster.persistence.storageClass`           | Persistent Volume storage class.                                            | `""`                           |
-| `valkey-cluster.persistence.size`                   | Persistent Volume size.                                                     | `8Gi`                          |
-| `valkey-cluster.service.ports.valkey`               | Port of Valkey service                                                      | `6379`                         |
-| `valkey-cluster.sysctlImage.repository`             | Image repository, eg. `bitnamilegacy/os-shell`.                             | `bitnamilegacy/os-shell`       |
-| `valkey-cluster.volumePermissions.image.repository` | Image repository, eg. `bitnamilegacy/os-shell`.                             | `bitnamilegacy/os-shell`       |
-
 ### valkey
 
-Valkey and [Valkey cluster](#valkey-cluster) cannot be enabled at the same time.
-
-| Name                                        | Description                                                                 | Value                           |
-| ------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------- |
-| `valkey.enabled`                            | Enable valkey standalone or replicated                                      | `false`                         |
-| `valkey.architecture`                       | Whether to use standalone or replication                                    | `standalone`                    |
-| `valkey.kubectl.image.repository`           | Image repository, eg. `bitnamilegacy/kubectl`.                              | `bitnamilegacy/kubectl`         |
-| `valkey.image.repository`                   | Image repository, eg. `bitnamilegacy/valkey`.                               | `bitnamilegacy/valkey`          |
-| `valkey.global.valkey.password`             | Required password                                                           | `changeme`                      |
-| `valkey.master.count`                       | Number of Valkey master instances to deploy                                 | `1`                             |
-| `valkey.master.service.ports.valkey`        | Port of Valkey service                                                      | `6379`                          |
-| `valkey.metrics.image.repository`           | Image repository, eg. `bitnamilegacy/redis-exporter`.                       | `bitnamilegacy/redis-exporter`  |
-| `valkey.primary.persistence.enabled`        | Enable persistence on Valkey replicas nodes using Persistent Volume Claims. | `true`                          |
-| `valkey.primary.persistence.storageClass`   | Persistent Volume storage class.                                            | `""`                            |
-| `valkey.primary.persistence.size`           | Persistent Volume size.                                                     | `8Gi`                           |
-| `valkey.replica.persistence.enabled`        | Enable persistence on Valkey replicas nodes using Persistent Volume Claims. | `true`                          |
-| `valkey.replica.persistence.storageClass`   | Persistent Volume storage class.                                            | `""`                            |
-| `valkey.replica.persistence.size`           | Persistent Volume size.                                                     | `8Gi`                           |
-| `valkey.sentinel.image.repository`          | Image repository, eg. `bitnamilegacy/sentinel`.                             | `bitnamilegacy/valkey-sentinel` |
-| `valkey.volumePermissions.image.repository` | Image repository, eg. `bitnamilegacy/os-shell`.                             | `bitnamilegacy/os-shell`        |
+| Name                                       | Description                                        | Value                      |
+| ------------------------------------------ | -------------------------------------------------- | -------------------------- |
+| `valkey.enabled`                           | Enable valkey standalone or replicated             | `false`                    |
+| `valkey.image.registry`                    | Image registry                                     | `docker.io`                |
+| `valkey.image.repository`                  | Image repository                                   | `valkey/valkey`            |
+| `valkey.image.tag`                         | Image tag                                          | `""`                       |
+| `valkey.auth.enabled`                      | Enable ACL-based authentication                    | `true`                     |
+| `valkey.auth.aclUsers.default.permissions` | ACL permissions for the default user               | `~* &* +@all`              |
+| `valkey.auth.aclUsers.default.password`    | Password for the default user                      | `changeme`                 |
+| `valkey.service.port`                      | Port of Valkey service                             | `6379`                     |
+| `valkey.dataStorage.enabled`               | Enable persistence using Persistent Volume Claims. | `false`                    |
+| `valkey.dataStorage.className`             | Persistent Volume storage class.                   | `""`                       |
+| `valkey.dataStorage.requestedSize`         | Persistent Volume size.                            | `8Gi`                      |
+| `valkey.replica.enabled`                   | Enable replication                                 | `false`                    |
+| `valkey.replica.replicas`                  | Number of Valkey replica instances to deploy       | `3`                        |
+| `valkey.replica.persistence.size`          | Persistent Volume size for replicas.               | `8Gi`                      |
+| `valkey.replica.persistence.storageClass`  | Persistent Volume storage class for replicas.      | `""`                       |
+| `valkey.metrics.enabled`                   | Enable Prometheus exporter sidecar                 | `false`                    |
+| `valkey.metrics.exporter.image.registry`   | Image registry                                     | `ghcr.io`                  |
+| `valkey.metrics.exporter.image.repository` | Image repository                                   | `oliver006/redis_exporter` |
+| `valkey.metrics.exporter.image.tag`        | Image tag                                          | `""`                       |
 
 ### PostgreSQL HA
 

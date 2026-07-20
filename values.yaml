@@ -646,125 +646,63 @@ gitea:
     successThreshold: 1
     failureThreshold: 10
 
-## @section valkey-cluster
-## @descriptionStart
-## Valkey cluster and [Valkey](#valkey) cannot be enabled at the same time.
-## @descriptionEnd
-valkey-cluster:
-  ## @param valkey-cluster.enabled Enable valkey cluster
-  # ⚠️ The valkey charts do not work well with special characters in the password (<https://gitea.com/gitea/helm-chart/issues/690>).
-  # Consider omitting such or open an issue in the Bitnami repo and let us know once this got fixed.
-  ## @param valkey-cluster.usePassword Whether to use password authentication.
-  ## @param valkey-cluster.usePasswordFiles Whether to mount passwords as files instead of environment variables.
-  enabled: true
-  usePassword: false
-  usePasswordFiles: false
-
-  ## @param valkey-cluster.image.repository Image repository, eg. `bitnamilegacy/valkey-cluster`.
-  image:
-    repository: bitnamilegacy/valkey-cluster
-
-  ## @param valkey-cluster.cluster.nodes Number of valkey cluster master nodes
-  ## @param valkey-cluster.cluster.replicas Number of valkey cluster master node replicas
-  cluster:
-    nodes: 3 # default: 6
-    replicas: 0 # default: 1
-
-  ## @param valkey-cluster.metrics.image.repository Image repository, eg. `bitnamilegacy/redis-exporter`.
-  metrics:
-    image:
-      repository: bitnamilegacy/redis-exporter
-
-  ## @param valkey-cluster.persistence.enabled Enable persistence on Valkey replicas nodes using Persistent Volume Claims.
-  ## @param valkey-cluster.persistence.storageClass Persistent Volume storage class.
-  ## @param valkey-cluster.persistence.size Persistent Volume size.
-  persistence:
-    enabled: true
-    storageClass: ""
-    size: 8Gi
-
-  ## @param valkey-cluster.service.ports.valkey Port of Valkey service
-  service:
-    ports:
-      valkey: 6379
-
-  ## @param valkey-cluster.sysctlImage.repository Image repository, eg. `bitnamilegacy/os-shell`.
-  sysctlImage:
-    repository: bitnamilegacy/os-shell
-
-  ## @param valkey-cluster.volumePermissions.image.repository Image repository, eg. `bitnamilegacy/os-shell`.
-  volumePermissions:
-    image:
-      repository: bitnamilegacy/os-shell
-
-
 ## @section valkey
-
-## @descriptionStart
-## Valkey and [Valkey cluster](#valkey-cluster) cannot be enabled at the same time.
-## @descriptionEnd
 valkey:
   ## @param valkey.enabled Enable valkey standalone or replicated
-  ## @param valkey.architecture Whether to use standalone or replication
   enabled: false
-  architecture: standalone
 
-  ## @param valkey.kubectl.image.repository Image repository, eg. `bitnamilegacy/kubectl`.
-  kubectl:
-    image:
-      repository: bitnamilegacy/kubectl
-
-  ## @param valkey.image.repository Image repository, eg. `bitnamilegacy/valkey`.
+  ## @param valkey.image.registry Image registry
+  ## @param valkey.image.repository Image repository
+  ## @param valkey.image.tag Image tag
   image:
-    repository: bitnamilegacy/valkey
+    registry: docker.io
+    repository: valkey/valkey
+    tag: ""
 
-  # ⚠️ The valkey charts do not work well with special characters in the password (<https://gitea.com/gitea/helm-chart/issues/690>).
-  # Consider omitting such or open an issue in the Bitnami repo and let us know once this got fixed.
-  ## @param valkey.global.valkey.password Required password
-  global:
-    valkey:
-      password: changeme
+  ## @param valkey.auth.enabled Enable ACL-based authentication
+  ## @param valkey.auth.aclUsers.default.permissions ACL permissions for the default user
+  ## @param valkey.auth.aclUsers.default.password Password for the default user
+  auth:
+    enabled: true
+    aclUsers:
+      default:
+        permissions: "~* &* +@all"
+        password: changeme
 
-  ## @param valkey.master.count Number of Valkey master instances to deploy
-  ## @param valkey.master.service.ports.valkey Port of Valkey service
-  master:
-    count: 1
-    service:
-      ports:
-        valkey: 6379
+  ## @param valkey.service.port Port of Valkey service
+  service:
+    port: 6379
 
-  ## @param valkey.metrics.image.repository Image repository, eg. `bitnamilegacy/redis-exporter`.
-  metrics:
-    image:
-      repository: bitnamilegacy/redis-exporter
+  ## @param valkey.dataStorage.enabled Enable persistence using Persistent Volume Claims.
+  ## @param valkey.dataStorage.className Persistent Volume storage class.
+  ## @param valkey.dataStorage.requestedSize Persistent Volume size.
+  dataStorage:
+    enabled: false
+    className: ""
+    requestedSize: 8Gi
 
-  primary:
-    ## @param valkey.primary.persistence.enabled Enable persistence on Valkey replicas nodes using Persistent Volume Claims.
-    ## @param valkey.primary.persistence.storageClass Persistent Volume storage class.
-    ## @param valkey.primary.persistence.size Persistent Volume size.
-    persistence:
-      enabled: true
-      storageClass: ""
-      size: 8Gi
-
+  ## @param valkey.replica.enabled Enable replication
+  ## @param valkey.replica.replicas Number of Valkey replica instances to deploy
+  ## @param valkey.replica.persistence.size Persistent Volume size for replicas.
+  ## @param valkey.replica.persistence.storageClass Persistent Volume storage class for replicas.
   replica:
-    ## @param valkey.replica.persistence.enabled Enable persistence on Valkey replicas nodes using Persistent Volume Claims.
-    ## @param valkey.replica.persistence.storageClass Persistent Volume storage class.
-    ## @param valkey.replica.persistence.size Persistent Volume size.
+    enabled: false
+    replicas: 3
     persistence:
-      enabled: true
-      storageClass: ""
       size: 8Gi
+      storageClass: ""
 
-  ## @param valkey.sentinel.image.repository Image repository, eg. `bitnamilegacy/sentinel`.
-  sentinel:
-    image:
-      repository: bitnamilegacy/valkey-sentinel
-
-  ## @param valkey.volumePermissions.image.repository Image repository, eg. `bitnamilegacy/os-shell`.
-  volumePermissions:
-    image:
-      repository: bitnamilegacy/os-shell
+  ## @param valkey.metrics.enabled Enable Prometheus exporter sidecar
+  ## @param valkey.metrics.exporter.image.registry Image registry
+  ## @param valkey.metrics.exporter.image.repository Image repository
+  ## @param valkey.metrics.exporter.image.tag Image tag
+  metrics:
+    enabled: false
+    exporter:
+      image:
+        registry: ghcr.io
+        repository: oliver006/redis_exporter
+        tag: ""
 
 ## @section PostgreSQL HA
 postgresql-ha:

@@ -215,28 +215,20 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "valkey.dns" -}}
-{{- if and ((index .Values "valkey-cluster").enabled) ((index .Values "valkey").enabled) -}}
-{{- fail "valkey and valkey-cluster cannot be enabled at the same time. Please only choose one." -}}
-{{- else if (index .Values "valkey-cluster").enabled -}}
-{{- printf "redis+cluster://:%s@%s-valkey-cluster-headless.%s.svc.%s:%g/0?pool_size=100&idle_timeout=180s&" (index .Values "valkey-cluster").global.valkey.password .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "valkey-cluster").service.ports.valkey -}}
-{{- else if (index .Values "valkey").enabled -}}
-{{- printf "redis://:%s@%s-valkey-primary.%s.svc.%s:%g/0?pool_size=100&idle_timeout=180s&" (index .Values "valkey").global.valkey.password .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "valkey").master.service.ports.valkey -}}
+{{- if (index .Values "valkey").enabled -}}
+{{- printf "redis://:%s@%s-valkey.%s.svc.%s:%g/0?pool_size=100&idle_timeout=180s&" (index (index .Values "valkey").auth.aclUsers "default").password .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "valkey").service.port -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "valkey.port" -}}
-{{- if (index .Values "valkey-cluster").enabled -}}
-{{ (index .Values "valkey-cluster").service.ports.valkey }}
-{{- else if (index .Values "valkey").enabled -}}
-{{ (index .Values "valkey").master.service.ports.valkey }}
+{{- if (index .Values "valkey").enabled -}}
+{{ (index .Values "valkey").service.port }}
 {{- end -}}
 {{- end -}}
 
 {{- define "valkey.servicename" -}}
-{{- if (index .Values "valkey-cluster").enabled -}}
-{{- printf "%s-valkey-cluster-headless.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
-{{- else if (index .Values "valkey").enabled -}}
-{{- printf "%s-valkey-primary.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
+{{- if (index .Values "valkey").enabled -}}
+{{- printf "%s-valkey.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
 {{- end -}}
 {{- end -}}
 
@@ -403,7 +395,7 @@ https
     {{- $_ := set .Values.gitea.config.metrics "TOKEN" .Values.gitea.metrics.token -}}
   {{- end -}}
   {{- /* valkey queue */ -}}
-  {{- if or ((index .Values "valkey-cluster").enabled) ((index .Values "valkey").enabled) -}}
+  {{- if (index .Values "valkey").enabled -}}
     {{- $_ := set .Values.gitea.config.queue "TYPE" "redis" -}}
     {{- $_ := set .Values.gitea.config.queue "CONN_STR" (include "valkey.dns" .) -}}
     {{- $_ := set .Values.gitea.config.session "PROVIDER" "redis" -}}
