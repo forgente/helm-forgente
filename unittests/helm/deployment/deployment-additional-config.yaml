@@ -14,7 +14,7 @@ tests:
       - containsDocument:
           kind: Deployment
           apiVersion: apps/v1
-          name: gitea-unittests
+          name: gitea-unittests-forgente
   - it: Deployment with empty additionalConfigFromEnvs
     template: templates/gitea/deployment.yaml
     set:
