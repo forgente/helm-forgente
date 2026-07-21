@@ -112,7 +112,7 @@ tests:
     asserts:
       - matchRegex:
           path: metadata.name
-          pattern: "^gitea-unittests-(?:ssh|http)$"
+          pattern: "^gitea-unittests-forgente-(?:ssh|http)$"
       - matchRegex:
           path: spec.ports[0].name
           pattern: "^(?:ssh|http)$"

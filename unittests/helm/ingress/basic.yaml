@@ -23,7 +23,7 @@ tests:
           of: Ingress
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-gitea
+          value: RELEASE-NAME-forgente
       - matchRegex:
           path: apiVersion
           pattern: networking.k8s.io/v1
