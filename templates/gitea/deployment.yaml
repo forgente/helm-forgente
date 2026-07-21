@@ -75,6 +75,7 @@ spec:
           command:
             - "{{ .Values.initContainersScriptsVolumeMountPath }}/init_directory_structure.sh"
           env:
+            # legacy GITEA_* kept; FORGENTE_* added below for post-fork images whose baked defaults would otherwise shadow them
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
             - name: GITEA_CUSTOM
@@ -82,6 +83,14 @@ spec:
             - name: GITEA_WORK_DIR
               value: /data
             - name: GITEA_TEMP
+              value: /tmp/gitea
+            - name: FORGENTE_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: FORGENTE_CUSTOM
+              value: /data/gitea
+            - name: FORGENTE_WORK_DIR
+              value: /data
+            - name: FORGENTE_TEMP
               value: /tmp/gitea
             {{- if .Values.deployment.env }}
             {{- toYaml .Values.deployment.env | nindent 12 }}
@@ -128,6 +137,14 @@ spec:
             - name: GITEA_WORK_DIR
               value: /data
             - name: GITEA_TEMP
+              value: /tmp/gitea
+            - name: FORGENTE_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: FORGENTE_CUSTOM
+              value: /data/gitea
+            - name: FORGENTE_WORK_DIR
+              value: /data
+            - name: FORGENTE_TEMP
               value: /tmp/gitea
             - name: TMP_EXISTING_ENVS_FILE
               value: /tmp/existing-envs
@@ -227,6 +244,14 @@ spec:
             - name: GITEA_WORK_DIR
               value: /data
             - name: GITEA_TEMP
+              value: /tmp/gitea
+            - name: FORGENTE_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: FORGENTE_CUSTOM
+              value: /data/gitea
+            - name: FORGENTE_WORK_DIR
+              value: /data
+            - name: FORGENTE_TEMP
               value: /tmp/gitea
             {{- if .Values.image.rootless }}
             - name: HOME
@@ -329,6 +354,14 @@ spec:
             - name: GITEA_WORK_DIR
               value: /data
             - name: GITEA_TEMP
+              value: /tmp/gitea
+            - name: FORGENTE_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: FORGENTE_CUSTOM
+              value: /data/gitea
+            - name: FORGENTE_WORK_DIR
+              value: /data
+            - name: FORGENTE_TEMP
               value: /tmp/gitea
             {{- if and (hasKey .Values.resources "limits") (hasKey .Values.resources.limits "cpu") }}
             - name: GOMAXPROCS
