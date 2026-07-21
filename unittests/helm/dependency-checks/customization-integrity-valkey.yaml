@@ -3,51 +3,50 @@ release:
   name: gitea-unittests
   namespace: testing
 set:
-  valkey-cluster:
-    enabled: false
   valkey:
     enabled: true
-    architecture: standalone
-    global:
-      valkey:
-        password: gitea-password
-    master:
-      count: 2
+    auth:
+      enabled: true
+      aclUsers:
+        default:
+          permissions: "~* &* +@all"
+          password: gitea-password
 tests:
-  - it: "[valkey] configures correct 'master' nodes"
-    template: charts/valkey/templates/primary/application.yaml
-    asserts:
-      - documentIndex: 0
-        equal:
-          path: spec.replicas
-          value: 1
-  - it: "[valkey] valkey.global.valkey.password is applied as expected"
+  - it: "[valkey] valkey.auth.aclUsers.default.password is applied as expected"
     template: charts/valkey/templates/secret.yaml
     asserts:
       - documentIndex: 0
         equal:
-          path: data["valkey-password"]
+          path: data.default-password
           value: "Z2l0ZWEtcGFzc3dvcmQ="
   - it: "[valkey] renders the referenced service"
-    template: charts/valkey/templates/primary/service.yaml
+    template: charts/valkey/templates/service.yaml
     asserts:
       - containsDocument:
           kind: Service
           apiVersion: v1
-          name: gitea-unittests-valkey-primary
-          namespace: testing
+          name: gitea-unittests-valkey
       - documentIndex: 0
         contains:
           path: spec.ports
           content:
-            name: tcp-redis
-            nodePort: null
+            name: tcp
             port: 6379
-            targetPort: redis
+            targetPort: tcp
+            protocol: TCP
   - it: "[gitea] waits for valkey to be up and running"
     template: templates/gitea/init.yaml
     asserts:
       - documentIndex: 0
         matchRegex:
           path: stringData["configure_gitea.sh"]
-          pattern: nc -vz -w2 gitea-unittests-valkey-primary.testing.svc 6379
+          pattern: nc -vz -w2 gitea-unittests-valkey.testing.svc.cluster.local 6379
+  - it: "[gitea] waits for valkey to be up and running with custom cluster domain"
+    set:
+      clusterDomain: my-special-cluster.local
+    template: templates/gitea/init.yaml
+    asserts:
+      - documentIndex: 0
+        matchRegex:
+          path: stringData["configure_gitea.sh"]
+          pattern: nc -vz -w2 gitea-unittests-valkey.testing.svc.my-special-cluster.local 6379

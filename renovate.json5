@@ -1,51 +1,55 @@
 {
-  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: [
-    'gitea>gitea/renovate-config',
-    ':automergeMinor',
-    'schedule:automergeDaily',
-    'schedule:weekends',
+    "gitea>gitea/renovate-config",
+    "helpers:pinGitHubActionDigests",
+    ":automergeMinor",
+    "schedule:automergeDaily",
+    "schedule:weekends",
   ],
   labels: [
-    'kind/dependency',
+    "kind/dependency",
   ],
   digest: {
     automerge: true,
   },
-  automergeStrategy: 'squash',
-  'git-submodules': {
+  automergeStrategy: "squash",
+  "git-submodules": {
     enabled: true,
   },
   customManagers: [
     {
-      description: 'Gitea-version of https://docs.renovatebot.com/presets-regexManagers/#regexmanagersgithubactionsversions',
-      customType: 'regex',
+      description: "Gitea-version of https://docs.renovatebot.com/presets-regexManagers/#regexmanagersgithubactionsversions",
+      customType: "regex",
       managerFilePatterns: [
-        '/.gitea/workflows/.+\\.ya?ml$/',
+        "/.gitea/workflows/.+\\.ya?ml$/",
       ],
       matchStrings: [
-        '# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[a-z-0-9]+?))?\\s+[A-Za-z0-9_]+?_VERSION\\s*:\\s*["\']?(?<currentValue>.+?)["\']?\\s',
+        "# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[a-z-0-9]+?))?\\s+[A-Za-z0-9_]+?_VERSION\\s*:\\s*[\"']?(?<currentValue>.+?)[\"']?\\s",
       ],
     },
     {
-      description: 'Detect helm-unittest yaml schema file',
-      customType: 'regex',
+      description: "Detect helm-unittest yaml schema file",
+      customType: "regex",
       managerFilePatterns: [
-        '/.vscode/settings\\.json$/',
+        "/.vscode/settings\\.json$/",
       ],
       matchStrings: [
-        'https:\\/\\/raw\\.githubusercontent\\.com\\/(?<depName>[^\\s]+?)\\/(?<currentValue>v[0-9.]+?)\\/schema\\/helm-testsuite\\.json',
+        "https:\\/\\/raw\\.githubusercontent\\.com\\/(?<depName>[^\\s]+?)\\/(?<currentValue>v[0-9.]+?)\\/schema\\/helm-testsuite\\.json",
       ],
-      datasourceTemplate: 'github-releases',
+      datasourceTemplate: "github-releases",
     },
     {
-      description: 'Automatically detect new Gitea releases',
-      customType: 'regex',
+      description: "Automatically detect new Gitea releases",
+      customType: "regex",
+      datasourceTemplate: "github-releases",
+      depNameTemplate: "gitea/gitea",
+      extractVersionTemplate: "^v(?<version>.*)$",
       managerFilePatterns: [
-        '/(^|/)Chart\\.yaml$/',
+        "/(^|/)Chart\\.ya?ml$/",
       ],
       matchStrings: [
-        '# renovate datasource=(?<datasource>\\S+) depName=(?<depName>\\S+) extractVersion=(?<extractVersion>\\S+)\\nappVersion:\\s?(?<currentValue>\\S+)\\n',
+        "^appVersion:\\s+[\"']?(?<currentVersion>\\S+)[\"']?$",
       ],
     },
   ],
@@ -54,78 +58,78 @@
     "commitMessageAction": "update",
     "commitMessageTopic": "lockfiles",
     schedule: [
-      'at any time',
+      "at any time",
     ]
   },
   packageRules: [
     {
-      groupName: 'subcharts (minor & patch)',
+      groupName: "subcharts (minor & patch)",
       matchManagers: [
-        'helmv3',
+        "helmv3",
       ],
       matchUpdateTypes: [
-        'minor',
-        'patch',
-        'digest',
+        "minor",
+        "patch",
+        "digest",
       ],
     },
     {
-      groupName: 'bats testing framework',
+      groupName: "bats testing framework",
       matchManagers: [
-        'git-submodules',
+        "git-submodules",
       ],
       matchUpdateTypes: [
-        'minor',
-        'patch',
-        'digest',
+        "minor",
+        "patch",
+        "digest",
       ],
     },
     {
-      groupName: 'workflow dependencies (minor & patch)',
+      groupName: "workflow dependencies (minor & patch)",
       matchManagers: [
-        'github-actions',
-        'npm',
-        'custom.regex',
+        "github-actions",
+        "npm",
+        "custom.regex",
       ],
       matchUpdateTypes: [
-        'minor',
-        'patch',
-        'digest',
+        "minor",
+        "patch",
+        "digest",
       ],
       matchFileNames: [
-        '!Chart.yaml',
+        "!Chart.yaml",
       ],
     },
     {
-      description: 'Update README.md on changes in values.yaml',
+      description: "Update README.md on changes in values.yaml",
       matchManagers: [
-        'helm-values',
+        "helm-values",
       ],
       postUpgradeTasks: {
         commands: [
-          'install-tool node',
-          'make readme',
+          "install-tool node",
+          "make readme",
         ],
         fileFilters: [
-          'README.md',
+          "README.md",
         ],
-        executionMode: 'update',
+        executionMode: "update",
       },
     },
     {
-      description: 'Override changelog url for Helm image, to have release notes in our PRs',
+      description: "Override changelog url for Helm image, to have release notes in our PRs",
       matchDepNames: [
-        'alpine/helm',
+        "alpine/helm",
       ],
-      changelogUrl: 'https://github.com/helm/helm',
+      changelogUrl: "https://github.com/helm/helm",
     },
     {
-      description: 'Bump Gitea as fast as possible - not only on weekends',
+      description: "Bump Gitea as fast as possible - not only on weekends",
       matchDepNames: [
-        'go-gitea/gitea',
+        "go-gitea/gitea",
       ],
       schedule: [
-        'at any time',
+        "at any time",
       ],
     },
   ],

@@ -2,6 +2,10 @@
     "yaml.schemas": {
         "https://raw.githubusercontent.com/helm-unittest/helm-unittest/v1.1.1/schema/helm-testsuite.json": [
             "/unittests/**/*.yaml"
+        ],
+        "https://docs.renovatebot.com/renovate-schema.json":[
+          "renovate.json",
+          "renovate.json5"
         ]
     },
     "yaml.schemaStore.enable": true,

@@ -5,11 +5,8 @@ dependencies:
 - name: postgresql-ha
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 16.3.2
-- name: valkey-cluster
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 3.0.24
 - name: valkey
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 3.0.31
-digest: sha256:ceb6a1890cfdc2627abb85d3e2a4baa64d30afd21dcfabce978a824a67f0a2bb
-generated: "2025-08-30T00:03:04.59764502Z"
+  repository: https://valkey.io/valkey-helm
+  version: 0.10.0
+digest: sha256:1afecbf0d4fc9f48e31417573d4bed7e0ac7848040b9e0c5f3989ada9d1f944f
+generated: "2026-07-20T19:52:11.548874634+02:00"

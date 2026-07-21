@@ -15,22 +15,27 @@ env:
 jobs:
   check-and-test:
     runs-on: ubuntu-latest
-    container: alpine/helm:3.21.3
+    container: docker.io/alpine/helm:4.2.3
     steps:
       - name: install tools
         run: |
           apk update
           apk add --update bash make nodejs npm yamllint ncurses
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.0
+      - name: define helm repositories
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add valkey https://valkey.io/valkey-helm
+          helm repo update
       - name: install chart dependencies
         run: helm dependency build
       - name: lint
-        run: helm lint
+        run: helm lint .
       - name: template
         run: helm template --debug gitea-helm .
       - name: prepare unit test environment
         run: |
-          helm plugin install --version ${{ env.HELM_UNITTEST_VERSION }} https://github.com/helm-unittest/helm-unittest
+          helm plugin install --verify=false --version ${{ env.HELM_UNITTEST_VERSION }} https://github.com/helm-unittest/helm-unittest
           git submodule update --init --recursive
       - name: unit tests
         env:
