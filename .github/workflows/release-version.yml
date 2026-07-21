@@ -46,6 +46,10 @@ jobs:
         run: |
           # FIXME: use upstream after https://github.com/technosophos/helm-gpg/issues/1 is solved
           helm plugin install https://github.com/pat-s/helm-gpg
+          # non-OCI dependency repos must be added before dependency build
+          # (mirrors upstream test-pr.yml; valkey came in with chart #1097)
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add valkey https://valkey.io/valkey-helm
           helm dependency build
           helm package --version "${GITHUB_REF#refs/tags/v}" ./
           # NB: "charts/" is taken - helm dependency build vendors subcharts there
