@@ -32,7 +32,7 @@ tests:
         containsDocument:
           kind: Secret
           apiVersion: v1
-          name: gitea-unittests-gpg-key
+          name: gitea-unittests-forgente-gpg-key
       - isNotNullOrEmpty:
           path: metadata.labels
       - equal:

@@ -14,7 +14,7 @@ tests:
       - containsDocument:
           kind: Deployment
           apiVersion: apps/v1
-          name: gitea-unittests
+          name: gitea-unittests-forgente
   - it: deployment labels are set
     template: templates/gitea/deployment.yaml
     set:
@@ -43,7 +43,7 @@ tests:
       - equal:
           path: spec.selector.matchLabels
           value:
-            app.kubernetes.io/name: gitea
+            app.kubernetes.io/name: forgente
             app.kubernetes.io/instance: gitea-unittests
   - it: nodeSelector is undefined
     asserts:

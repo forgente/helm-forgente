@@ -17,7 +17,7 @@ tests:
         containsDocument:
           kind: ServiceMonitor
           apiVersion: monitoring.coreos.com/v1
-          name: gitea-unittests
+          name: gitea-unittests-forgente
       - isNotNullOrEmpty:
           path: metadata.labels
       - equal:
@@ -36,7 +36,7 @@ tests:
         containsDocument:
           kind: ServiceMonitor
           apiVersion: monitoring.coreos.com/v1
-          name: gitea-unittests
+          name: gitea-unittests-forgente
       - isNotNullOrEmpty:
           path: metadata.labels
       - equal:
@@ -55,7 +55,7 @@ tests:
         containsDocument:
           kind: ServiceMonitor
           apiVersion: monitoring.coreos.com/v1
-          name: gitea-unittests
+          name: gitea-unittests-forgente
       - isNotNullOrEmpty:
           path: metadata.labels
       - equal:
@@ -65,6 +65,6 @@ tests:
               authorization:
                 type: Bearer
                 credentials:
-                  name: gitea-unittests-metrics-secret
+                  name: gitea-unittests-forgente-metrics-secret
                   key: token
                   optional: false

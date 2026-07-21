@@ -21,7 +21,7 @@ tests:
           count: 1
       - equal:
           path: metadata.name
-          value: gitea-unittests
+          value: gitea-unittests-forgente
       - equal:
           path: metadata.annotations["haproxy.router.openshift.io/timeout"]
           value: 5m
@@ -36,7 +36,7 @@ tests:
           value: Service
       - equal:
           path: spec.to.name
-          value: gitea-unittests-http
+          value: gitea-unittests-forgente-http
       - equal:
           path: spec.port.targetPort
           value: http

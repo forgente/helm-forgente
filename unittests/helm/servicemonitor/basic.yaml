@@ -31,7 +31,7 @@ tests:
       - containsDocument:
           kind: ServiceMonitor
           apiVersion: monitoring.coreos.com/v1
-          name: gitea-unittests
+          name: gitea-unittests-forgente
       - notExists:
           path: metadata.annotations
       - notExists:
