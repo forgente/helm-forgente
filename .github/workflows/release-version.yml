@@ -71,7 +71,11 @@ jobs:
 
       - name: Copy files to S3
         run: |
-          aws s3 sync chart-repo/ "s3://${{ secrets.AWS_S3_BUCKET }}/charts/" --no-progress
+          # sync the immutable chart artifacts (.tgz/.prov) with default/long caching
+          aws s3 sync chart-repo/ "s3://${{ secrets.AWS_S3_BUCKET }}/charts/" --no-progress --exclude "index.yaml"
+          # short TTL on the mutable index so a new chart version goes live at the
+          # CDN edge within minutes without a manual CloudFront invalidation
+          aws s3 cp chart-repo/index.yaml "s3://${{ secrets.AWS_S3_BUCKET }}/charts/index.yaml" --no-progress --cache-control max-age=300
 
       - name: create github release
         env:
